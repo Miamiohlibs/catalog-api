@@ -1,9 +1,10 @@
 import urllib
+import urlparse
 from collections import OrderedDict
 import jsonpatch
 import jsonpointer
 
-from django.http import Http404
+from django.http import Http404, QueryDict
 from django.conf import settings
 
 from rest_framework import views
@@ -64,6 +65,12 @@ class SimpleView(views.APIView):
 
         url = request.build_absolute_uri()
 
+        # URL encode the query
+        (scheme, netloc, path, query, fragment) = urlparse.urlsplit(url)
+        query_dict = QueryDict(query).copy()
+        query = query_dict.urlencode()
+        url = urlparse.urlunsplit((scheme, netloc, path, query, fragment))
+
         content = {'status': 200,
                    'details': 'The resource at {} was updated with the '
                    'fields or sub-resource content provided in the request.'
@@ -107,6 +114,12 @@ class SimpleGetMixin(object):
 
         url = request.build_absolute_uri()
 
+        # URL encode the query
+        (scheme, netloc, path, query, fragment) = urlparse.urlsplit(url)
+        query_dict = QueryDict(query).copy()
+        query = query_dict.urlencode()
+        url = urlparse.urlunsplit((scheme, netloc, path, query, fragment))
+
         # determine the previous and next offsets for the previous and next
         # pages of results
         if offset is None or offset == 0:
@@ -121,12 +134,10 @@ class SimpleGetMixin(object):
 
         prev_page = None
         if prev_offset is not None:
-            prev_page = urllib.unquote(replace_query_param(url, offset_p, 
-                                                           prev_offset))
+            prev_page = replace_query_param(url, offset_p, prev_offset)
         next_page = None
         if next_offset is not None:
-            next_page = urllib.unquote(replace_query_param(url, offset_p,
-                                                           next_offset))
+            next_page = replace_query_param(url, offset_p, next_offset)
 
         resource_name = render.underscoreToCamel(self.resource_name)
         resource_list = self.get_serializer(instance=page, force_refresh=True,
