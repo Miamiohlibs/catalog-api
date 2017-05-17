@@ -806,6 +806,8 @@ persist locally. You can force the test database to be rebuilt using
 defined in `pytest.ini`, and this is where the configuration for the test
 databases lives, if you're curious.
 
+* The project uses [pytest-cov](https://pypi.python.org/pypi/pytest-cov) for checking test coverage and generating reports.
+
 
 License
 -------
